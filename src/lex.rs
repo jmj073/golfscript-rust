@@ -1,4 +1,5 @@
-use crate::lex::tokenize::tokenize;
+use tokenize::tokenize;
+use Token::*;
 
 
 mod tokenize;
@@ -8,12 +9,11 @@ pub enum Token<'a> {
     Word(&'a str),
     Str(&'a str),
     Num(i128),
-    Block(&'a str),
     BracketLeft,
     BracketRight,
     BraceLeft,
     BraceRight,
-    Assign
+    Assign,
 }
 
 pub struct Lex<T>
@@ -31,7 +31,20 @@ impl<'a, T: Iterator<Item = &'a str>> Iterator for Lex<T> {
     type Item = Token<'a>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        None
+        let s = self.tokenizer.next()?;
+        let c = s.chars().next()?;
+
+        match c {
+            '-' => Some(if s.len() == 1 { Word("-") } else { Num(s.parse().ok()?) }),
+            '0'..='9' => Some(Num(s.parse().ok()?)),
+            '[' => Some(BracketLeft),
+            ']' => Some(BracketRight),
+            '{' => Some(BraceLeft),
+            '}' => Some(BraceRight),
+            ':' => Some(Assign),
+            '\'' | '"' => Some(Str(&s[1..s.len()-1])),
+            _ => Some(Word(s)),
+        }
     }
 }
 
@@ -47,7 +60,10 @@ mod tests {
     #[test]
     fn lex_test() {
         let result: Vec<_> = lex(r#"+<-3- 45{'a\'b';cd1"#).collect();
-        let expect = [];
+        let expect = [
+            Word("+"), Word("<"), Num(-3), Word("-"), Word(" "),
+            Num(45), BraceLeft, Str(r#"a\'b"#), Word(";"), Word("cd1")
+        ];
 
         assert_eq!(result, expect);
     }

@@ -15,13 +15,11 @@ static TOKEN_RX_STR: LazyLock<String>  = LazyLock::new(|| [
 
 static TOKEN_RE: LazyLock<Regex> = LazyLock::new(|| Regex::new(&TOKEN_RX_STR).unwrap());
 
-pub enum Token {
 
-}
-
-fn tokenize(s: &str) -> impl Iterator<Item = &str> {
+pub fn tokenize(s: &str) -> impl Iterator<Item = &str> {
     TOKEN_RE.find_iter(s).map(|m| m.as_str())
 }
+
 
 #[cfg(test)]
 mod tests {

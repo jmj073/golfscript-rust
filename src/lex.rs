@@ -27,22 +27,41 @@ impl<T> Lex<T> {
     }
 }
 
+fn check_string(s: &str) -> &str {
+    if s.len() < 2 {
+        panic!("Invalid string: {s}");
+    }
+
+    let b = s.as_bytes();
+    let f = b[0] as char;
+    let l = b[b.len()-1] as char;
+
+    match f {
+        '\'' | '"' if f == l => &s[1..s.len()-1],
+        _ => panic!("Invalid string: {s}")
+    }
+}
+
 impl<'a, T: Iterator<Item = &'a str>> Iterator for Lex<T> {
     type Item = Token<'a>;
 
     fn next(&mut self) -> Option<Self::Item> {
         let s = self.tokenizer.next()?;
-        let c = s.chars().next()?;
+        let c = s.chars().next().unwrap();
 
         match c {
-            '-' => Some(if s.len() == 1 { Word("-") } else { Num(s.parse().ok()?) }),
-            '0'..='9' => Some(Num(s.parse().ok()?)),
+            '-' => Some(if s.len() == 1 {
+                    Word("-")
+                } else {
+                    Num(s.parse().expect("Cannot parse number"))
+                }),
+            '0'..='9' => Some(Num(s.parse().expect("Cannot parse number"))),
             '[' => Some(BracketLeft),
             ']' => Some(BracketRight),
             '{' => Some(BraceLeft),
             '}' => Some(BraceRight),
             ':' => Some(Assign),
-            '\'' | '"' => Some(Str(&s[1..s.len()-1])),
+            '\'' | '"' => Some(Str(check_string(s))),
             _ => Some(Word(s)),
         }
     }
@@ -66,5 +85,23 @@ mod tests {
         ];
 
         assert_eq!(result, expect);
+    }
+
+    #[test]
+    #[should_panic]
+    fn invalid_string1() {
+        let _result: Vec<_> = lex(r#"'asdf"#).collect();
+    }
+
+    #[test]
+    #[should_panic]
+    fn invalid_string2() {
+        let _result: Vec<_> = lex(r#""asdf"#).collect();
+    }
+
+    #[test]
+    #[should_panic]
+    fn invalid_string3() {
+        let _result: Vec<_> = lex(r#"'asda""#).collect();
     }
 }

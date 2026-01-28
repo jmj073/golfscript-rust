@@ -1,8 +1,8 @@
 use core::panic;
 use std::sync::LazyLock;
 
-use crate::golf::{Golf, Stack, Env};
-use crate::value::{BlockType, Value, Value::*};
+use crate::golf::{Golf, Env};
+use crate::value::{BlockType, Value::*};
 
 // TODO panic -> Result
 
@@ -25,7 +25,7 @@ fn gfn_tilde(g: &mut Golf) {
     }
 }
 
-fn gfn_backtick(g: &mut Golf) {
+fn gfn_backtick(_g: &mut Golf) {
     unimplemented!();
 }
 
@@ -88,7 +88,7 @@ fn gfn_dollar(g: &mut Golf) {
                 a.sort();
                 stk.push(Arr(a.into_iter().map(Int).collect()));
             },
-            Block(b) => unimplemented!()
+            Block(_b) => unimplemented!()
         }
     } else {
         panic!("$: stack is empty!");

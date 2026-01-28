@@ -20,14 +20,22 @@ impl Golf {
     pub fn exec(&mut self, s: &str) {
         let l = lex(s);
 
-        for tok in l {
-            match tok {
-                Token::Word(s) => self.process_word(s),
-                Token::Str(s) =>
-                    self.stk.push(Value::Str(String::from(s))),
-                Token::Num(n) => self.stk.push(Value::Int(n)),
-                _ => unimplemented!(),
+        for res in l {
+            match res {
+                Ok(tok) =>
+                    match tok {
+                        Token::Word(s) => self.process_word(s),
+                        Token::Str(s) =>
+                            self.stk.push(Value::Str(String::from(s))),
+                        Token::Num(n) => self.stk.push(Value::Int(n)),
+                        _ => unimplemented!(),
+                    },
+                Err(e) => { // TODO 출력이 아니라 반환으로 바꾸기!
+                    eprintln!("{:?}", e);
+                    return;
+                }
             }
+
         }
     }
 

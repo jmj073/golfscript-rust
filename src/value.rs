@@ -1,5 +1,6 @@
 use crate::golf::Golf;
 
+// TODO Eq
 #[derive(PartialEq, Eq, Debug, Clone)]
 pub enum BlockType {
     Str(String),
